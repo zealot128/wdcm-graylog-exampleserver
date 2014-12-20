@@ -13,7 +13,7 @@
       elasticsearch_heap_size: '1g'
       elasticsearch_transport_tcp_port: 9300
       elasticsearch_plugins:
-      - name:  royrusso/elasticsearch-HQ
+        - name:  mobz/elasticsearch-head
     - role: graylog2.graylog2
       is_master: true
       elasticsearch_max_docs_per_index: 20000000
@@ -43,6 +43,15 @@
         dest: '/etc/nginx/conf.d/graylog2.conf'
       notify: restart nginx
 
+    - copy:
+        src: 'files/htpasswd'
+        dest: '/etc/nginx/.htpasswd'
+
+    - template:
+        src: 'files/nginx-es.conf'
+        dest: '/etc/nginx/conf.d/elasticsearch.conf'
+      notify: restart nginx
+
     - template:
         src: 'files/rsyslog.conf'
         dest: '/etc/rsyslog.d/graylog.conf'
@@ -60,4 +69,5 @@
     - ufw: rule=allow port=ssh proto=tcp
     - ufw: rule=limit port=ssh proto=tcp
     - ufw: rule=allow port=http proto=tcp
+    - ufw: rule=allow port=81 proto=tcp
     - ufw: state=enabled policy=deny logging=on

@@ -14,3 +14,6 @@ Login to HOSTNAME.com admin / password123
 1. Then, on System -> Content Packs enable NGINX Content Pack.
 2. Create another UDP Syslog Input with Port 5140 to integrate syslog messages
 3. Wait for messages to come in
+
+Visit `HOSTNAME:81/_plugin/bigdesk` to access ElasticSearch (login: admin / password123)
+

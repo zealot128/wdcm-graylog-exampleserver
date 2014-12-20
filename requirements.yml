@@ -1,0 +1,4 @@
+- src: 'graylog2.graylog2'
+- src: 'Stouts.elasticsearch'
+- src: 'Stouts.nginx'
+

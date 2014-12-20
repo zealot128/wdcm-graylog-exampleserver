@@ -1,0 +1,5 @@
+jiffy ansible_ssh_host=123.123.123.123 ansible_ssh_user=root
+
+[main]
+jiffy
+

@@ -1,0 +1,63 @@
+- hosts: main
+  vars:
+    syslog_port: 5140
+  pre_tasks:
+    - apt: pkg={{item}}
+      with_items:
+        - mongodb-server
+        - bash-completion
+        - htop
+        - lsof
+  roles:
+    - role: Stouts.elasticsearch
+      elasticsearch_heap_size: '1g'
+      elasticsearch_transport_tcp_port: 9300
+      elasticsearch_plugins:
+      - name:  royrusso/elasticsearch-HQ
+    - role: graylog2.graylog2
+      is_master: true
+      elasticsearch_max_docs_per_index: 20000000
+      elasticsearch_transport_tcp_port: 9350
+      graylog2_packages_url: 'https://packages.graylog2.org/repo/packages/graylog2-0.92-repository-ubuntu14.04_latest.deb'
+      web_server_uri: 'http://127.0.0.1:12900'
+      web_secret: 'v1E5jbiNGGMaTUw3pSAyZqCmHFYT5NBKRn8OyKlvqmqV6j'
+      root_username: admin
+      root_password_sha2: 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f'
+      web_listen_address: '127.0.0.1'
+    # - role: Stouts.nginx
+
+  tasks:
+    - apt_repository: repo=ppa:nginx/development
+    - apt: pkg=nginx state=latest
+    - template:
+        src: 'files/nginx.conf.j2'
+        dest: '/etc/nginx/sites-available/main.conf'
+      notify: restart nginx
+    - file:
+        src: '/etc/nginx/sites-available/main.conf'
+        dest: '/etc/nginx/sites-enabled/main.conf'
+        state: link
+      notify: restart nginx
+    - template:
+        src: 'files/nginx-logging.conf'
+        dest: '/etc/nginx/conf.d/graylog2.conf'
+      notify: restart nginx
+
+    - template:
+        src: 'files/rsyslog.conf'
+        dest: '/etc/rsyslog.d/graylog.conf'
+      notify: restart syslog
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
+    - name: restart syslog
+      service: name=rsyslog state=restarted
+
+
+- hosts: main
+  tasks:
+    - apt: pkg=ufw
+    - ufw: rule=allow port=ssh proto=tcp
+    - ufw: rule=limit port=ssh proto=tcp
+    - ufw: rule=allow port=http proto=tcp
+    - ufw: state=enabled policy=deny logging=on

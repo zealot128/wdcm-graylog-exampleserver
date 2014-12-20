@@ -2,6 +2,7 @@
 
 
 1. Install Ansible
+2. Install requirements: ``ansible-galaxy install -r requirements.yml``
 2. ``cp hosts.example hosts`` adjust ip, make sure you can connect to server with pubkey
 2. Enter server details in ``hosts``
 3. ``ansible-playbook -i hosts playbook.yml``

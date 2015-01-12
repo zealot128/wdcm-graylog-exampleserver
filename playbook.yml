@@ -1,6 +1,8 @@
 - hosts: main
+  sudo: true
   vars:
     syslog_port: 5140
+    server_name: 'ec2-54-93-56-55.eu-central-1.compute.amazonaws.com'
   pre_tasks:
     - apt: pkg={{item}}
       with_items:
@@ -10,7 +12,7 @@
         - lsof
   roles:
     - role: Stouts.elasticsearch
-      elasticsearch_heap_size: '1g'
+      elasticsearch_heap_size: '256m'
       elasticsearch_transport_tcp_port: 9300
       elasticsearch_plugins:
         - name:  mobz/elasticsearch-head
@@ -38,6 +40,14 @@
         dest: '/etc/nginx/sites-enabled/main.conf'
         state: link
       notify: restart nginx
+    # Amazon server names too long
+    - copy:
+        dest: '/etc/nginx/conf.d/buckets.conf'
+        content: |
+          server_names_hash_bucket_size 128;
+      notify: restart nginx
+      tags: [wip]
+
     - template:
         src: 'files/nginx-logging.conf'
         dest: '/etc/nginx/conf.d/graylog2.conf'
@@ -64,6 +74,7 @@
 
 
 - hosts: main
+  sudo: true
   tasks:
     - apt: pkg=ufw
     - ufw: rule=allow port=ssh proto=tcp
